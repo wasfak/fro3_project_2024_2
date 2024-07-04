@@ -9,6 +9,45 @@ export const config = {
   },
 };
 
+const columnMapping = {
+  code: "code",
+  name: "name",
+  stock: "stock",
+  company: "company",
+  Elzaafran: "Elzaafran",
+  Hokok: "Hokok",
+  Khulfaa: "Khulfaa",
+  Kolytadab: "Kolytadab",
+  madenty: "madenty",
+  portSaid: "portSaid",
+  semad: "semad",
+  zagazig: "zagazig",
+  arkhan: "arkhan",
+  awel_khulfa: "awel_khulfa",
+  awel_march: "awel_march",
+  ismailia: "ismailia",
+  gala2: "gala2",
+  gomhorya: "gomhorya",
+  golf: "golf",
+  drasat: "drasat",
+  rehab: "rehab",
+  swees: "swees",
+  mohafza: "mohafza",
+  m_aam: "m_aam",
+  manzala: "manzala",
+  new_domyat: "new_domyat",
+  estad: "estad",
+  gamaa: "gamaa",
+  geesh: "geesh",
+  seka: "seka",
+  bank_masr: "bank_masr",
+  porsaid_st: "porsaid_st",
+  domyat: "domyat",
+  sheraton: "sheraton",
+  kanat_swees: "kanat_swees",
+  m_nasr: "m_nasr",
+};
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method Not Allowed" });
@@ -17,29 +56,23 @@ export default async function handler(req, res) {
   try {
     await db.connectDb();
 
-    // Use the Multer middleware to handle file upload
     uploadMiddleware(req, res, async function (err) {
       if (err) {
         console.error("File upload failed:", err);
         return res.status(500).json({ error: "File upload failed" });
       }
 
-      // Access the file data from req.file.buffer
       const fileBuffer = req.file.buffer;
-
-      // Parse Excel file
       const workbook = xlsx.read(fileBuffer, { type: "buffer" });
       const sheetName = workbook.SheetNames[0];
       const sheet = workbook.Sheets[sheetName];
 
-      // Check if the sheet is empty
       const data = xlsx.utils.sheet_to_json(sheet);
       if (data.length === 0) {
         return res.status(400).json({ error: "Empty Excel file" });
       }
 
-      // Check if the required columns are present
-      const requiredColumns = ["Code"];
+      const requiredColumns = ["code"];
       const sheetColumnsLowerCase = Object.keys(data[0]).map((column) =>
         column.toLowerCase()
       );
@@ -53,19 +86,20 @@ export default async function handler(req, res) {
         });
       }
 
-      try {
-        // Use insertMany for batch insertion with parallelism
-        await CodeModel.deleteMany();
-        const batchSize = 1000; // Adjust the batch size as needed
-        const promises = [];
-
-        // Parallelize insertion using Promise.all
-        for (let i = 0; i < data.length; i += batchSize) {
-          const batch = data.slice(i, i + batchSize);
-          promises.push(CodeModel.insertMany(batch));
+      const mappedData = data.map((row) => {
+        const mappedRow = {};
+        for (const [key, value] of Object.entries(row)) {
+          const mappedKey = columnMapping[key];
+          if (mappedKey) {
+            mappedRow[mappedKey] = value;
+          }
         }
+        return mappedRow;
+      });
 
-        await Promise.all(promises);
+      try {
+        await CodeModel.deleteMany();
+        await CodeModel.insertMany(mappedData);
       } catch (insertError) {
         console.error("Error inserting data into MongoDB:", insertError);
         return res
