@@ -1,0 +1,97 @@
+MONGODB_URL=mongodb+srv://hardmodz:5HBxu4rgu1YMLtWl@cluster0.pjj37e5.mongodb.net/tarsh?retryWrites=true&w=majority&appName=Cluster0
+
+
+model Codes {
+  id             String @id @default(auto()) @map("_id") @db.ObjectId
+  code           Int
+  name           String
+  stock          Int    @default(0)
+  company        String @default("")
+  Elzaafran      Int    @default(0)
+  Hokok          Int    @default(0)
+  Khulfaa        Int    @default(0)
+  Kolytadab      Int    @default(0)
+  madenty        Int    @default(0)
+  portSaid       Int    @default(0)
+  semad          Int    @default(0)
+  zagazig        Int    @default(0)
+  Arkan          Int    @default(0) @map("أركان")
+  AwalKhulafaa   Int    @default(0) @map("أول الخلفاء")
+  AwalMars       Int    @default(0) @map("أول مارس")
+  Ismailia       Int    @default(0) @map("الاسماعيلية")
+  Galaa          Int    @default(0) @map("الجلاء")
+  Gomhoureya     Int    @default(0) @map("الجمهورية")
+  Golf           Int    @default(0) @map("الجولف")
+  Dirasat        Int    @default(0) @map("الدراسات")
+  Rehab          Int    @default(0) @map("الرحاب")
+  Suez           Int    @default(0) @map("السويس")
+  Muhafaza       Int    @default(0) @map("المحافظة")
+  MostashfaAm    Int    @default(0) @map("المستشفى العام")
+  Manzala        Int    @default(0) @map("المنزلة")
+  DamiettaJadida Int    @default(0) @map("دمياط الجديدة")
+  Far3Estad      Int    @default(0) @map("فرع الإستاد")
+  Far3Gamaa      Int    @default(0) @map("فرع الجامعة")
+  Far3Gaysh      Int    @default(0) @map("فرع الجيش")
+  Far3Sikka      Int    @default(0) @map("فرع السكة")
+  Far3BankMisr   Int    @default(0) @map("فرع بنك مصر")
+  Far3Borsaid    Int    @default(0) @map("فرع بورسعيد")
+  Far3Damietta   Int    @default(0) @map("فرع دمياط")
+  Far3Sheraton   Int    @default(0) @map("فرع شيراتون")
+  QanatSuez      Int    @default(0) @map("قناة السويس")
+  MadinatNasr    Int    @default(0) @map("مدينة نصر")
+}
+
+
+ useEffect(() => {
+    async function fetchData() {
+      // You can await here
+      const response = await getCode("2");
+      console.log(response);
+
+      if (response) {
+        setCode(response.code);
+      } else {
+        setCode(0);
+      }
+      // ...
+    }
+    fetchData();
+  }, []);
+
+
+
+import db from "@/db";
+import CodeModel from "@/models/codeModel";
+
+export default async function handler(req, res) {
+  try {
+    if (req.method !== "POST") {
+      return res.status(405).json({ error: "Method Not Allowed" });
+    }
+
+    const body = req.body;
+    const code = body.code;
+
+    if (!code) {
+      return res.status(400).json({ error: "Invalid input data" });
+    }
+
+    await db.connectDb();
+    const searchCode = Number(code);
+
+    const foundCode = await CodeModel.findOne({ Code: searchCode });
+
+    if (!foundCode) {
+      return res.status(404).json({ message: "Code not found" });
+    }
+
+    // Return a response with the found code and the global count
+    return res.status(200).json({ foundCode });
+  } catch (error) {
+    console.error("Error searching for code:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  } finally {
+    await db.disconnectDb();
+  }
+}
+

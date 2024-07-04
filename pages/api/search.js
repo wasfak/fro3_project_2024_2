@@ -1,7 +1,29 @@
 import db from "@/db";
 import CodeModel from "@/models/codeModel";
+import Cors from 'cors';
+
+// Initialize the cors middleware
+const cors = Cors({
+  methods: ['POST', 'GET', 'HEAD'],
+  origin: '*', // Adjust this according to your needs, e.g., specific domain: 'https://example.com'
+});
+
+// Helper method to wait for middleware to execute before continuing
+function runMiddleware(req, res, fn) {
+  return new Promise((resolve, reject) => {
+    fn(req, res, (result) => {
+      if (result instanceof Error) {
+        return reject(result);
+      }
+      return resolve(result);
+    });
+  });
+}
 
 export default async function handler(req, res) {
+  // Run the cors middleware
+  await runMiddleware(req, res, cors);
+
   try {
     if (req.method !== "POST") {
       return res.status(405).json({ error: "Method Not Allowed" });
