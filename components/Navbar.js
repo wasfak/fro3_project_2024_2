@@ -51,6 +51,16 @@ export default function Navbar() {
         >
           Per pharmacy
         </Link>
+        <Link
+          href="/fro3"
+          className={`mx-6 ${
+            path === "/fro3"
+              ? "font-bold text-black duration-200 ease-in-out"
+              : ""
+          }`}
+        >
+          Branches
+        </Link>
       </div>
     </div>
   );

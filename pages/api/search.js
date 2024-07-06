@@ -1,11 +1,11 @@
 import db from "@/db";
 import CodeModel from "@/models/codeModel";
-import Cors from 'cors';
+import Cors from "cors";
 
 // Initialize the cors middleware
 const cors = Cors({
-  methods: ['POST', 'GET', 'HEAD'],
-  origin: '*', // Adjust this according to your needs, e.g., specific domain: 'https://example.com'
+  methods: ["POST", "GET", "HEAD"],
+  origin: "*", // Adjust this according to your needs, e.g., specific domain: 'https://example.com'
 });
 
 // Helper method to wait for middleware to execute before continuing
@@ -39,7 +39,7 @@ export default async function handler(req, res) {
     await db.connectDb();
     const searchCode = Number(code);
 
-    const foundCode = await CodeModel.findOne({ Code: searchCode });
+    const foundCode = await CodeModel.findOne({ code: searchCode });
 
     if (!foundCode) {
       return res.status(404).json({ message: "Code not found" });
